@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { Card, CardSection, Input, Button } from './common'; 
+import { Card, CardSection, Input, Button, Spinner } from './common'; 
 import { connect } from 'react-redux';
 import { emailChanged, passwordChanged, loginUser } from '../actions';
+import { View, Text } from 'react-native'; 
 
 
 class LoginForm extends Component {
@@ -17,6 +18,29 @@ class LoginForm extends Component {
   onButtonPress() {
     const { email, password } = this.props; 
     this.props.loginUser({ email, password })
+  }
+
+  renderError() {
+    if (this.props.error) {
+      return (
+        <View style={{ bacgroundColor: 'white' }} >
+          <Text style={style.errorTextStyle}>
+            {this.props.error}
+          </Text>
+        </View> 
+      )
+    }
+  }
+
+  renderButton() {
+    if (this.props.loading) {
+      return <Spinner size="large" />; 
+    }
+    return (
+      <Button onPress={this.onButtonPress.bind(this)}>
+        Login
+      </Button>
+    );
   }
 
   render() {
@@ -42,10 +66,10 @@ class LoginForm extends Component {
           />
         </CardSection> 
 
+        {this.renderError()} 
+
         <CardSection> 
-          <Button onPress={this.onButtonPress.bind(this)}>
-            Login
-          </Button>
+          { this.renderButton() }
         </CardSection> 
 
       </Card>
@@ -54,14 +78,29 @@ class LoginForm extends Component {
 }
 
 // map state to props to get a piece of state into component 
-const mapStateToProps = (state) => {
-  return {
-    email: state.auth.email, 
-    password: state.auth.password
-  }
+// const mapStateToProps = (state) => {
+//   return {
+//     email: state.auth.email, 
+//     password: state.auth.password,
+//     error: state.auth.error
+//   }
+// }
+
+const mapStateToProps = ({ auth }) => {  // destructuring out the auth from state 
+  const { email, password, error, loading } = auth; 
+  return { email, password, error, loading }
 }
 
 
 export default connect(mapStateToProps, { 
   emailChanged, passwordChanged, loginUser 
 })(LoginForm); 
+
+const style = {
+  errorTextStyle: {
+    fontSize: 20,
+    color: 'red', 
+    textAlign: 'center',
+    margin: 10
+  }
+}
